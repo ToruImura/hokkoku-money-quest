@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北國マネークエスト - ログイン</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a5f7a 0%, #2d7a8f 50%, #4a9db5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated Background */
+        .bg-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: -100px;
+            right: -50px;
+            animation-delay: 4s;
+        }
+
+        .shape:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            right: 10%;
+            animation-delay: 8s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 32px;
+            padding: 48px 40px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Logo and Header */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #4a9db5, #2d7a8f);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            box-shadow: 0 8px 24px rgba(74, 157, 181, 0.3);
+        }
+
+        .app-name {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .app-tagline {
+            font-size: 15px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* Tab Switcher */
+        .tab-switcher {
+            display: flex;
+            background: #f5f5f5;
+            border-radius: 16px;
+            padding: 4px;
+            margin-bottom: 32px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #2d7a8f;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4a9db5;
+            box-shadow: 0 0 0 4px rgba(74, 157, 181, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .password-toggle:hover {
+            opacity: 0.8;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #4a9db5;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            font-size: 14px;
+            color: #4a9db5;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .forgot-link:hover {
+            color: #2d7a8f;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4a9db5, #2d7a8f);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(74, 157, 181, 0.3);
+            margin-bottom: 16px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 157, 181, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e5e5;
+        }
+
+        .divider span {
+            padding: 0 16px;
+            font-size: 13px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .btn-social {
+            width: 100%;
+            padding: 14px;
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .btn-social:hover {
+            background: #f9f9f9;
+            border-color: #d0d0d0;
+        }
+
+        .social-icon {
+            font-size: 20px;
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .signup-prompt {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .signup-link {
+            color: #4a9db5;
+            text-decoration: none;
+            font-weight: 700;
+            margin-left: 4px;
+            transition: color 0.3s;
+        }
+
+        .signup-link:hover {
+            color: #2d7a8f;
+        }
+
+        /* Child Login Specific */
+        .profile-selector {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border: 2px solid #e5e5e5;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-card:hover {
+            border-color: #4a9db5;
+            background: #f9fcfd;
+        }
+
+        .profile-card.selected {
+            border-color: #4a9db5;
+            background: linear-gradient(135deg, #f0f8fb 0%, #e3f2f7 100%);
+        }
+
+        .profile-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #5bb4cc, #4a9db5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .profile-balance {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .profile-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #d0d0d0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .profile-card.selected .profile-check {
+            background: #4a9db5;
+            border-color: #4a9db5;
+        }
+
+        .profile-card.selected .profile-check::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Bottom Info */
+        .bottom-info {
+            text-align: center;
+            margin-top: 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .bottom-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 12px;
+        }
+
+        .bottom-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .bottom-link:hover {
+            color: white;
+        }
+
+        .copyright {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 36px 24px;
+            }
+
+            .app-name {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="login-card">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <div class="logo">💰</div>
+                <h1 class="app-name">北國マネークエスト</h1>
+                <p class="app-tagline">Learn to earn, save & invest</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="tab-switcher">
+                <button class="tab-btn active" onclick="switchTab('child')">子ども</button>
+                <button class="tab-btn" onclick="switchTab('parent')">保護者</button>
+            </div>
+
+            <!-- Child Login Form -->
+            <form id="childForm" class="login-form">
+                <div class="profile-selector">
+                    <div class="profile-card" onclick="selectProfile(1)">
+                        <div class="profile-avatar">🌱</div>
+                        <div class="profile-info">
+                            <div class="profile-name">ともかずくん</div>
+                            <div class="profile-balance">残高: ¥1,250</div>
+                        </div>
+                        <div class="profile-check"></div>
+                    </div>
+
+                    <div class="profile-card" onclick="selectProfile(2)">
+                        <div class="profile-avatar">🌸</div>
+                        <div class="profile-info">
+                            <div class="profile-name">さくらちゃん</div>
+                            <div class="profile-balance">残高: ¥2,800</div>
+                        </div>
+                        <div class="profile-check"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">PINコード</label>
+                    <input type="password" class="form-input" id="childPin" placeholder="4桁のPIN" maxlength="4" pattern="[0-9]*" inputmode="numeric" required>
+                </div>
+
+                <button type="submit" class="btn-primary">ログイン</button>
+
+                <div class="login-footer">
+                    <p class="signup-prompt">
+                        PINを忘れた場合は保護者に連絡してください
+                    </p>
+                </div>
+            </form>
+
+            <!-- Parent Login Form -->
+            <form id="parentForm" class="login-form" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">PINコード</label>
+                    <input type="password" class="form-input" id="parentPin" placeholder="0146" maxlength="4" pattern="[0-9]*" inputmode="numeric" required>
+                </div>
+
+                <button type="submit" class="btn-primary">ログイン</button>
+
+                <div class="divider">
+                    <span>または</span>
+                </div>
+
+                <button type="button" class="btn-social" onclick="socialLogin('google')">
+                    <span class="social-icon">🔵</span>
+                    Googleでログイン
+                </button>
+
+                <button type="button" class="btn-social" onclick="socialLogin('apple')">
+                    <span class="social-icon">🍎</span>
+                    Appleでログイン
+                </button>
+
+                <div class="login-footer">
+                    <p class="signup-prompt">
+                        アカウントをお持ちでない方
+                        <a href="#" class="signup-link">新規登録</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bottom Info -->
+        <div class="bottom-info">
+            <div class="bottom-links">
+                <a href="#" class="bottom-link">利用規約</a>
+                <a href="#" class="bottom-link">プライバシーポリシー</a>
+                <a href="#" class="bottom-link">ヘルプ</a>
+            </div>
+            <p class="copyright">© 2026 北國銀行 × トチツーカ. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedProfile = null;
+
+        // Tab Switching
+        function switchTab(tab) {
+            const childBtn = document.querySelector('.tab-btn:first-child');
+            const parentBtn = document.querySelector('.tab-btn:last-child');
+            const parentForm = document.getElementById('parentForm');
+            const childForm = document.getElementById('childForm');
+
+            if (tab === 'child') {
+                childBtn.classList.add('active');
+                parentBtn.classList.remove('active');
+                childForm.style.display = 'block';
+                parentForm.style.display = 'none';
+            } else {
+                parentBtn.classList.add('active');
+                childBtn.classList.remove('active');
+                parentForm.style.display = 'block';
+                childForm.style.display = 'none';
+            }
+        }
+
+        // Password Toggle
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Profile Selection
+        function selectProfile(id) {
+            selectedProfile = id;
+            document.querySelectorAll('.profile-card').forEach((card, index) => {
+                if (index + 1 === id) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+
+        // Form Submissions
+        document.getElementById('parentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pin = document.getElementById('parentPin').value;
+            if (pin === '0146') {
+                // Redirect to parent view
+                window.location.href = 'interactive-prototype.html#parent';
+            } else {
+                alert('PINコードが正しくありません。0146を入力してください。');
+            }
+        });
+
+        document.getElementById('childForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!selectedProfile) {
+                alert('プロフィールを選択してください');
+                return;
+            }
+            const pin = document.getElementById('childPin').value;
+            if (pin === '0146') {
+                // Redirect to child view
+                window.location.href = 'interactive-prototype.html#child';
+            } else {
+                alert('PINコードが正しくありません。0146を入力してください。');
+            }
+        });
+
+        // Social Login
+        function socialLogin(provider) {
+            console.log(`Logging in with ${provider}`);
+            // Auto login with any social provider (demo mode) - go to parent view
+            window.location.href = 'interactive-prototype.html#parent';
+        }
+
+        // Auto-select first profile for demo
+        window.addEventListener('load', () => {
+            selectProfile(1);
+        });
+    </script>
+</body>
+</html>

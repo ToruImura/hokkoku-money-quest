@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トチツーカキッズ - インタラクティブプロトタイプ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #e3f2f7 0%, #b8dce8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .mode-switcher {
+            max-width: 400px;
+            margin: 0 auto 20px;
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 8px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: transparent;
+            color: #666;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4a9db5, #2d7a8f);
+            color: white;
+        }
+
+        .logout-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .logout-btn:hover {
+            background: #ffebee;
+            color: #e57373;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .phone-frame {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Child View Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #5bb4cc, #4a9db5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .greeting {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .username {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d7a8f;
+        }
+
+        .notification-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f1f8f4;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            font-size: 20px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: #ff5252;
+            border-radius: 50%;
+        }
+
+        .wallet-card {
+            background: linear-gradient(135deg, #4a9db5 0%, #2d7a8f 100%);
+            border-radius: 24px;
+            padding: 28px;
+            color: white;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(74, 157, 181, 0.3);
+        }
+
+        .wallet-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wallet-balance {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .currency {
+            font-size: 24px;
+            opacity: 0.9;
+        }
+
+        .wallet-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .wallet-action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 16px;
+            padding: 14px 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wallet-action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            font-size: 24px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            flex: 1;
+            background: white;
+            border: 2px solid #e8f5e9;
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d7a8f;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d7a8f;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quest-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .quest-card {
+            background: white;
+            border: 2px solid #d4edf5;
+            border-radius: 20px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            gap: 14px;
+        }
+
+        .quest-card:hover {
+            border-color: #5bb4cc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 157, 181, 0.15);
+        }
+
+        .quest-card.completed {
+            opacity: 0.6;
+            border-color: #b8dce8;
+        }
+
+        .quest-card.pending {
+            border-color: #fff59d;
+            background: #fffef0;
+        }
+
+        .quest-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .quest-icon.home { background: linear-gradient(135deg, #fff9c4, #fff59d); }
+        .quest-icon.learn { background: linear-gradient(135deg, #b3e5fc, #81d4fa); }
+        .quest-icon.investment { background: linear-gradient(135deg, #c5e1a5, #aed581); }
+        .quest-icon.shopping { background: linear-gradient(135deg, #f8bbd0, #f48fb1); }
+
+        .quest-content {
+            flex: 1;
+        }
+
+        .quest-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .quest-desc {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .quest-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quest-reward {
+            background: #d4edf5;
+            color: #2d7a8f;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quest-status {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .quest-status.pending {
+            color: #f57c00;
+            font-weight: bold;
+        }
+
+        .quest-status.completed {
+            color: #4a9db5;
+            font-weight: bold;
+        }
+
+        .learning-carousel {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 24px;
+            scrollbar-width: none;
+        }
+
+        .learning-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .learning-card {
+            min-width: 280px;
+            background: linear-gradient(135deg, #f0f8fb 0%, #d4edf5 100%);
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .learning-card:hover {
+            border-color: #5bb4cc;
+            transform: scale(1.02);
+        }
+
+        .learning-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .learning-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #5bb4cc, #4a9db5);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .learning-badge {
+            background: #fff3e0;
+            color: #f57c00;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .learning-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2d7a8f;
+            margin-bottom: 6px;
+        }
+
+        .learning-desc {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .learning-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: #b8dce8;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5bb4cc, #4a9db5);
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: #2d7a8f;
+            font-weight: bold;
+        }
+
+        /* Parent View Styles */
+        .parent-header {
+            margin-bottom: 24px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #5bb4cc, #4a9db5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d7a8f;
+        }
+
+        .settings-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f1f8f4;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .child-selector {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+
+        .child-selector::-webkit-scrollbar {
+            display: none;
+        }
+
+        .child-chip {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .child-chip.active {
+            background: linear-gradient(135deg, #4a9db5, #2d7a8f);
+            color: white;
+            border-color: transparent;
+        }
+
+        .child-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .overview-section {
+            margin-bottom: 24px;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .overview-card {
+            background: white;
+            border: 2px solid #d4edf5;
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        .overview-card.large {
+            grid-column: 1 / -1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-icon.green { background: linear-gradient(135deg, #b8dce8, #93c9dc); }
+        .card-icon.blue { background: linear-gradient(135deg, #b3e5fc, #81d4fa); }
+        .card-icon.yellow { background: linear-gradient(135deg, #fff9c4, #fff59d); }
+        .card-icon.purple { background: linear-gradient(135deg, #e1bee7, #ce93d8); }
+
+        .card-badge {
+            background: #d4edf5;
+            color: #2d7a8f;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2d7a8f;
+            margin-bottom: 4px;
+        }
+
+        .card-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .card-detail {
+            font-size: 12px;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trend-up {
+            color: #4a9db5;
+        }
+
+        .progress-container {
+            margin-top: 12px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .progress-label {
+            color: #666;
+        }
+
+        .progress-value {
+            color: #2d7a8f;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #f0f8fb 0%, #d4edf5 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 80%;
+        }
+
+        .chart-bar {
+            width: 24px;
+            background: linear-gradient(180deg, #5bb4cc, #4a9db5);
+            border-radius: 6px 6px 0 0;
+            transition: height 0.5s;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .quick-action-btn {
+            background: white;
+            border: 2px solid #d4edf5;
+            border-radius: 16px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-action-btn:hover {
+            border-color: #5bb4cc;
+            transform: translateY(-2px);
+        }
+
+        .quick-action-icon {
+            font-size: 28px;
+        }
+
+        .quick-action-label {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .view-all-btn {
+            font-size: 13px;
+            color: #4a9db5;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .approval-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .approval-card {
+            background: white;
+            border: 2px solid #fff3e0;
+            border-radius: 18px;
+            padding: 16px;
+            transition: all 0.3s;
+        }
+
+        .approval-card.removing {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .approval-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .approval-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .approval-icon.pending { background: linear-gradient(135deg, #fff9c4, #fff59d); }
+
+        .approval-content {
+            flex: 1;
+        }
+
+        .approval-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .approval-meta {
+            font-size: 12px;
+            color: #999;
+            display: flex;
+            gap: 12px;
+        }
+
+        .approval-body {
+            margin-bottom: 12px;
+        }
+
+        .quest-evidence {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .approval-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .approve-btn {
+            background: linear-gradient(135deg, #5bb4cc, #4a9db5);
+            color: white;
+        }
+
+        .approve-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 157, 181, 0.3);
+        }
+
+        .reject-btn {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .reject-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .activity-timeline {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .activity-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .activity-dot.purchase { background: #4a9db5; }
+        .activity-dot.earn { background: #ffa726; }
+        .activity-dot.save { background: #42a5f5; }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .activity-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .activity-amount {
+            font-size: 15px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .activity-amount.positive {
+            color: #4a9db5;
+        }
+
+        .activity-amount.negative {
+            color: #666;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: white;
+            border-radius: 24px;
+            padding: 12px 8px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: #f0f8fb;
+        }
+
+        .nav-item.active {
+            background: #d4edf5;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #2d7a8f;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            width: 18px;
+            height: 18px;
+            background: #ff5252;
+            border-radius: 50%;
+            font-size: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .nav-item.active .nav-label {
+            color: #2d7a8f;
+            font-weight: bold;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #4a9db5, #2d7a8f);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(74, 157, 181, 0.4);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            max-width: 340px;
+            width: 90%;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d7a8f;
+            margin-bottom: 8px;
+        }
+
+        .modal-desc {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .modal-actions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 14px;
+            border-radius: 14px;
+            border: none;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #5bb4cc, #4a9db5);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Investment Screen Styles */
+        .invest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .back-btn, .info-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f0f8fb;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover, .info-btn:hover {
+            background: #d4edf5;
+        }
+
+        .invest-header-title {
+            flex: 1;
+            text-align: center;
+        }
+
+        .invest-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d7a8f;
+        }
+
+        .invest-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .portfolio-card {
+            background: linear-gradient(135deg, #4a9db5 0%, #2d7a8f 100%);
+            border-radius: 24px;
+            padding: 28px;
+            color: white;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(74, 157, 181, 0.3);
+        }
+
+        .portfolio-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .portfolio-balance {
+            font-size: 38px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .currency-small {
+            font-size: 22px;
+            opacity: 0.9;
+        }
+
+        .portfolio-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .portfolio-stat {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .stat-label-small {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .stat-value-small {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .stat-value-small.positive {
+            color: #81ff81;
+        }
+
+        .stat-value-small.negative {
+            color: #ffb3b3;
+        }
+
+        .stock-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stock-card {
+            background: white;
+            border: 2px solid #d4edf5;
+            border-radius: 18px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stock-card:hover {
+            border-color: #5bb4cc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 157, 181, 0.15);
+        }
+
+        .stock-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .stock-info {
+            flex: 1;
+        }
+
+        .stock-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .stock-ticker {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .stock-price-info {
+            text-align: right;
+        }
+
+        .stock-price {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .stock-change {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .stock-change.positive {
+            color: #4a9db5;
+        }
+
+        .stock-change.negative {
+            color: #e57373;
+        }
+
+        .invest-learn-section {
+            margin-bottom: 24px;
+        }
+
+        .learn-card-small {
+            background: linear-gradient(135deg, #f0f8fb 0%, #d4edf5 100%);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .learn-card-small:hover {
+            transform: scale(1.02);
+        }
+
+        .learn-icon-small {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #5bb4cc, #4a9db5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .learn-text {
+            flex: 1;
+        }
+
+        .learn-title-small {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2d7a8f;
+            margin-bottom: 2px;
+        }
+
+        .learn-desc-small {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Stock Purchase Modal Styles */
+        .stock-purchase-form {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .qty-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 2px solid #d4edf5;
+            background: white;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d7a8f;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .qty-btn:hover {
+            background: #f0f8fb;
+            border-color: #5bb4cc;
+        }
+
+        .qty-btn:active {
+            transform: scale(0.95);
+        }
+
+        #shareQuantity {
+            width: 80px;
+            height: 44px;
+            border: 2px solid #d4edf5;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d7a8f;
+        }
+
+        #shareQuantity:focus {
+            outline: none;
+            border-color: #5bb4cc;
+        }
+
+        .purchase-summary {
+            background: #f0f8fb;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            color: #666;
+        }
+
+        .summary-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d7a8f;
+        }
+
+        .purchase-note {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mode Switcher -->
+    <div class="mode-switcher">
+        <button class="mode-btn active" onclick="switchMode('child')">
+            🌱 子どもモード
+        </button>
+        <button class="mode-btn" onclick="switchMode('parent')">
+            👪 保護者モード
+        </button>
+        <button class="logout-btn" onclick="logout()">
+            🚪 ログアウト
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="phone-frame">
+            <!-- Child View -->
+            <div id="childView" class="view active">
+                <!-- Header -->
+                <div class="header">
+                    <div class="header-left">
+                        <div class="avatar">🌱</div>
+                        <div>
+                            <div class="greeting">こんにちは!</div>
+                            <div class="username">ともかずくん</div>
+                        </div>
+                    </div>
+                    <button class="notification-btn">
+                        🔔
+                        <div class="notification-badge"></div>
+                    </button>
+                </div>
+
+                <!-- Wallet Card -->
+                <div class="wallet-card floating">
+                    <div class="wallet-label">
+                        💰 トチツーカポイント
+                    </div>
+                    <div class="wallet-balance">
+                        <span class="currency">¥</span><span id="childBalance">1250</span>
+                    </div>
+                    <div class="wallet-actions">
+                        <button class="wallet-action-btn" onclick="showToast('🏪 加盟店マップを開きます')">
+                            <span class="action-icon">💸</span>
+                            つかう
+                        </button>
+                        <button class="wallet-action-btn" onclick="showToast('🎯 貯金目標を設定しましょう')">
+                            <span class="action-icon">🎯</span>
+                            ためる
+                        </button>
+                        <button class="wallet-action-btn" onclick="showToast('📊 取引履歴を見る')">
+                            <span class="action-icon">📊</span>
+                            きろく
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Bar -->
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="childQuestCount">8</div>
+                        <div class="stat-label">今月クエスト</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">バッジ</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">レベル</div>
+                    </div>
+                </div>
+
+                <!-- Today's Quests -->
+                <div class="section-title">
+                    ⭐ きょうのクエスト
+                </div>
+                <div class="quest-grid" id="childQuestList">
+                    <div class="quest-card" data-quest-id="3" onclick="openInvestmentScreen()">
+                        <div class="quest-icon investment">📈</div>
+                        <div class="quest-content">
+                            <div class="quest-title">とうしシミュレーション</div>
+                            <div class="quest-desc">かそうのとうしゲームでおかねをふやしてみよう</div>
+                            <div class="quest-footer">
+                                <div class="quest-reward">
+                                    <span>✨</span>
+                                    <span>+200P</span>
+                                </div>
+                                <div class="quest-status">まだ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quest-card" data-quest-id="4" onclick="openCorezoShopping()">
+                        <div class="quest-icon shopping">🛒</div>
+                        <div class="quest-content">
+                            <div class="quest-title">COREZOでかいもの</div>
+                            <div class="quest-desc">COREZOでほしいものをさがしてみよう</div>
+                            <div class="quest-footer">
+                                <div class="quest-reward">
+                                    <span>✨</span>
+                                    <span>+100P</span>
+                                </div>
+                                <div class="quest-status">まだ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quest-card" data-quest-id="1">
+                        <div class="quest-icon home">🏠</div>
+                        <div class="quest-content">
+                            <div class="quest-title">おへやのそうじ</div>
+                            <div class="quest-desc">じぶんのへやをきれいにしよう</div>
+                            <div class="quest-footer">
+                                <div class="quest-reward">
+                                    <span>✨</span>
+                                    <span>+100P</span>
+                                </div>
+                                <div class="quest-status">まだ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quest-card" data-quest-id="2" onclick="completeQuest(2)">
+                        <div class="quest-icon learn">📚</div>
+                        <div class="quest-content">
+                            <div class="quest-title">おかねクイズ</div>
+                            <div class="quest-desc">よさん・ちょきんについてまなぼう</div>
+                            <div class="quest-footer">
+                                <div class="quest-reward">
+                                    <span>✨</span>
+                                    <span>+50P</span>
+                                </div>
+                                <div class="quest-status">2/5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Section -->
+                <div class="section-title">
+                    🎓 まなぼう
+                </div>
+                <div class="learning-carousel">
+                    <div class="learning-card" onclick="showToast('📖 学習コンテンツを開きます')">
+                        <div class="learning-header">
+                            <div class="learning-icon">💰</div>
+                            <div class="learning-badge">NEW</div>
+                        </div>
+                        <div class="learning-title">おかねのやくわり</div>
+                        <div class="learning-desc">おかねがどうやってうまれたか、なにができるかをまなぼう</div>
+                        <div class="learning-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-text">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="learning-card" onclick="showToast('📖 学習を続ける')">
+                        <div class="learning-header">
+                            <div class="learning-icon">🎯</div>
+                            <div class="learning-badge">つづき</div>
+                        </div>
+                        <div class="learning-title">よさんをつくろう</div>
+                        <div class="learning-desc">ほしいものとひつようなものをわけて、けいかくをたてよう</div>
+                        <div class="learning-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <div class="progress-text">60%</div>
+                        </div>
+                    </div>
+
+                    <div class="learning-card" onclick="showToast('✅ すでに完了しています')">
+                        <div class="learning-header">
+                            <div class="learning-icon">🛡️</div>
+                            <div class="learning-badge">完了</div>
+                        </div>
+                        <div class="learning-title">あんぜんなつかいかた</div>
+                        <div class="learning-desc">おかねをつかうときにきをつけることをまなぼう</div>
+                        <div class="learning-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%"></div>
+                            </div>
+                            <div class="progress-text">100%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="bottom-nav">
+                    <button class="nav-item active">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">ホーム</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">⭐</span>
+                        <span class="nav-label">クエスト</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">🏪</span>
+                        <span class="nav-label">おみせ</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">👤</span>
+                        <span class="nav-label">マイページ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Investment Screen -->
+            <div id="investmentView" class="view">
+                <!-- Investment Header -->
+                <div class="invest-header">
+                    <button class="back-btn" onclick="closeInvestmentScreen()">
+                        <span>←</span>
+                    </button>
+                    <div class="invest-header-title">
+                        <div class="invest-title">とうしシミュレーション</div>
+                        <div class="invest-subtitle">かそうのおかねで学ぼう</div>
+                    </div>
+                    <button class="info-btn">ℹ️</button>
+                </div>
+
+                <!-- Portfolio Summary -->
+                <div class="portfolio-card">
+                    <div class="portfolio-label">シミュレーションざんだか</div>
+                    <div class="portfolio-balance">
+                        <span class="currency-small">¥</span><span id="portfolioBalance">10000</span>
+                    </div>
+                    <div class="portfolio-stats">
+                        <div class="portfolio-stat">
+                            <div class="stat-label-small">今日のへんか</div>
+                            <div class="stat-value-small positive">+¥120 (+1.2%)</div>
+                        </div>
+                        <div class="portfolio-stat">
+                            <div class="stat-label-small">トータルりえき</div>
+                            <div class="stat-value-small positive">+¥500</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock List -->
+                <div class="section-title">
+                    📊 カブをえらぼう
+                </div>
+
+                <div class="stock-list">
+                    <div class="stock-card" onclick="selectStock('apple')">
+                        <div class="stock-icon" style="background: linear-gradient(135deg, #555, #333);">🍎</div>
+                        <div class="stock-info">
+                            <div class="stock-name">アップル</div>
+                            <div class="stock-ticker">AAPL</div>
+                        </div>
+                        <div class="stock-price-info">
+                            <div class="stock-price">¥25,000</div>
+                            <div class="stock-change positive">+2.5%</div>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="selectStock('nintendo')">
+                        <div class="stock-icon" style="background: linear-gradient(135deg, #e60012, #b00009);">🎮</div>
+                        <div class="stock-info">
+                            <div class="stock-name">にんてんどう</div>
+                            <div class="stock-ticker">NTDOY</div>
+                        </div>
+                        <div class="stock-price-info">
+                            <div class="stock-price">¥8,500</div>
+                            <div class="stock-change positive">+1.8%</div>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="selectStock('toyota')">
+                        <div class="stock-icon" style="background: linear-gradient(135deg, #eb0a1e, #c00818);">🚗</div>
+                        <div class="stock-info">
+                            <div class="stock-name">トヨタ</div>
+                            <div class="stock-ticker">TM</div>
+                        </div>
+                        <div class="stock-price-info">
+                            <div class="stock-price">¥3,200</div>
+                            <div class="stock-change negative">-0.5%</div>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="selectStock('sony')">
+                        <div class="stock-icon" style="background: linear-gradient(135deg, #003087, #002060);">🎵</div>
+                        <div class="stock-info">
+                            <div class="stock-name">ソニー</div>
+                            <div class="stock-ticker">SONY</div>
+                        </div>
+                        <div class="stock-price-info">
+                            <div class="stock-price">¥15,800</div>
+                            <div class="stock-change positive">+3.2%</div>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="selectStock('pokemon')">
+                        <div class="stock-icon" style="background: linear-gradient(135deg, #ffcb05, #f7b500);">⚡</div>
+                        <div class="stock-info">
+                            <div class="stock-name">ポケモン</div>
+                            <div class="stock-ticker">PKM</div>
+                        </div>
+                        <div class="stock-price-info">
+                            <div class="stock-price">¥12,000</div>
+                            <div class="stock-change positive">+5.0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learn Section -->
+                <div class="invest-learn-section">
+                    <div class="learn-card-small">
+                        <div class="learn-icon-small">📚</div>
+                        <div class="learn-text">
+                            <div class="learn-title-small">カブってなに?</div>
+                            <div class="learn-desc-small">かいしゃのいちぶをもてるよ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="bottom-nav">
+                    <button class="nav-item" onclick="closeInvestmentScreen()">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">ホーム</span>
+                    </button>
+                    <button class="nav-item active">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">とうし</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">グラフ</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">👤</span>
+                        <span class="nav-label">マイページ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Parent View -->
+            <div id="parentView" class="view">
+                <!-- Header -->
+                <div class="parent-header">
+                    <div class="header-top">
+                        <div class="logo-area">
+                            <div class="logo-icon">👪</div>
+                            <div class="logo-text">保護者ダッシュボード</div>
+                        </div>
+                        <button class="settings-btn">⚙️</button>
+                    </div>
+
+                    <!-- Child Selector -->
+                    <div class="child-selector">
+                        <div class="child-chip active">
+                            <div class="child-avatar">🌱</div>
+                            <span>ともかず</span>
+                        </div>
+                        <div class="child-chip">
+                            <div class="child-avatar">🌸</div>
+                            <span>さくら</span>
+                        </div>
+                        <div class="child-chip">
+                            <div class="child-avatar">➕</div>
+                            <span>子どもを追加</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <div class="overview-section">
+                    <div class="overview-grid">
+                        <div class="overview-card">
+                            <div class="card-header">
+                                <div class="card-icon green">💰</div>
+                            </div>
+                            <div class="card-value">¥<span id="parentBalance">1250</span></div>
+                            <div class="card-label">現在の残高</div>
+                            <div class="card-detail">
+                                <span class="trend-up">↑ ¥200</span>
+                                <span>今週</span>
+                            </div>
+                        </div>
+
+                        <div class="overview-card">
+                            <div class="card-header">
+                                <div class="card-icon yellow">⭐</div>
+                            </div>
+                            <div class="card-value" id="parentQuestCount">8</div>
+                            <div class="card-label">今月のクエスト</div>
+                            <div class="card-detail">
+                                <span class="trend-up">↑ 2件</span>
+                                <span>先月比</span>
+                            </div>
+                        </div>
+
+                        <div class="overview-card large">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-label" style="margin-bottom: 4px;">今月の支出</div>
+                                    <div class="card-value" style="font-size: 24px;">¥3,450</div>
+                                </div>
+                                <div class="card-badge">予算内</div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-header">
+                                    <span class="progress-label">月間予算 ¥5,000</span>
+                                    <span class="progress-value">69%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 69%"></div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <div class="chart-bars">
+                                    <div class="chart-bar" style="height: 45%"></div>
+                                    <div class="chart-bar" style="height: 70%"></div>
+                                    <div class="chart-bar" style="height: 55%"></div>
+                                    <div class="chart-bar" style="height: 85%"></div>
+                                    <div class="chart-bar" style="height: 60%"></div>
+                                    <div class="chart-bar" style="height: 75%"></div>
+                                    <div class="chart-bar" style="height: 69%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overview-card">
+                            <div class="card-header">
+                                <div class="card-icon blue">📚</div>
+                            </div>
+                            <div class="card-value">12</div>
+                            <div class="card-label">学習レベル</div>
+                            <div class="card-detail">
+                                <span>75% 完了</span>
+                            </div>
+                        </div>
+
+                        <div class="overview-card">
+                            <div class="card-header">
+                                <div class="card-icon purple">🏪</div>
+                            </div>
+                            <div class="card-value">15</div>
+                            <div class="card-label">加盟店利用</div>
+                            <div class="card-detail">
+                                <span>8店舗</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="showToast('💸 送金画面を開きます')">
+                        <span class="quick-action-icon">💸</span>
+                        <span class="quick-action-label">送金</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="showToast('⚙️ ルール設定画面を開きます')">
+                        <span class="quick-action-icon">⚙️</span>
+                        <span class="quick-action-label">ルール設定</span>
+                    </button>
+                    <button class="quick-action-btn" onclick="showToast('📊 月次レポートを作成します')">
+                        <span class="quick-action-icon">📊</span>
+                        <span class="quick-action-label">レポート</span>
+                    </button>
+                </div>
+
+                <!-- Approval Section -->
+                <div class="section-title">
+                    <span>🔔 承認待ち</span>
+                    <button class="view-all-btn">すべて見る →</button>
+                </div>
+                <div class="approval-list" id="approvalList">
+                    <div class="approval-card" data-quest-id="1" data-reward="100">
+                        <div class="approval-header">
+                            <div class="approval-icon pending">🏠</div>
+                            <div class="approval-content">
+                                <div class="approval-title">部屋の掃除</div>
+                                <div class="approval-meta">
+                                    <span>⏰ 30分前</span>
+                                    <span>💰 +100P</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="approval-body">
+                            <div class="quest-evidence">
+                                「きれいにそうじしました!」
+                            </div>
+                        </div>
+                        <div class="approval-actions">
+                            <button class="action-btn approve-btn" onclick="approveQuest(this, 1, 100)">✓ 承認する</button>
+                            <button class="action-btn reject-btn" onclick="rejectQuest(this)">× 却下</button>
+                        </div>
+                    </div>
+
+                    <div class="approval-card" data-quest-id="2" data-reward="50">
+                        <div class="approval-header">
+                            <div class="approval-icon pending">📚</div>
+                            <div class="approval-content">
+                                <div class="approval-title">お金クイズに挑戦</div>
+                                <div class="approval-meta">
+                                    <span>⏰ 1時間前</span>
+                                    <span>💰 +50P</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="approval-body">
+                            <div class="quest-evidence">
+                                クイズ5問中4問正解しました
+                            </div>
+                        </div>
+                        <div class="approval-actions">
+                            <button class="action-btn approve-btn" onclick="approveQuest(this, 2, 50)">✓ 承認する</button>
+                            <button class="action-btn reject-btn" onclick="rejectQuest(this)">× 却下</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="section-title">
+                    <span>📋 最近のアクティビティ</span>
+                    <button class="view-all-btn">すべて見る →</button>
+                </div>
+                <div class="activity-timeline">
+                    <div class="activity-item">
+                        <div class="activity-dot purchase"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">コンビニで購入</div>
+                            <div class="activity-desc">今日 14:30 • ファミリーマート金沢店</div>
+                        </div>
+                        <div class="activity-amount negative">-¥350</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-dot earn"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">クエスト報酬</div>
+                            <div class="activity-desc">今日 10:15 • お手伝い完了</div>
+                        </div>
+                        <div class="activity-amount positive">+¥100</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-dot purchase"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">本屋で購入</div>
+                            <div class="activity-desc">昨日 16:20 • 金沢文庫</div>
+                        </div>
+                        <div class="activity-amount negative">-¥800</div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-dot save"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">貯金目標達成</div>
+                            <div class="activity-desc">昨日 12:00 • ゲーム貯金 完了</div>
+                        </div>
+                        <div class="activity-amount positive">🎯</div>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation -->
+                <div class="bottom-nav">
+                    <button class="nav-item active">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">ホーム</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">
+                            ✓
+                            <span class="notification-dot" id="approvalCount">2</span>
+                        </span>
+                        <span class="nav-label">承認</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">レポート</span>
+                    </button>
+                    <button class="nav-item">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-label">設定</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="questModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">🎉</div>
+                <div class="modal-title">クエストをていしゅつ</div>
+                <div class="modal-desc">おやに承認してもらいましょう!</div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="submitQuest()">ていしゅつする</button>
+                <button class="modal-btn secondary" onclick="closeModal()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Purchase Modal -->
+    <div class="modal" id="stockModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon" id="stockModalIcon">🍎</div>
+                <div class="modal-title" id="stockModalName">アップル</div>
+                <div class="modal-desc">
+                    <span id="stockModalTicker">AAPL</span> • <span id="stockModalPrice">¥25,000</span>/かぶ
+                </div>
+            </div>
+            <div class="stock-purchase-form">
+                <div class="form-group">
+                    <label class="form-label">かぶすう</label>
+                    <div class="quantity-selector">
+                        <button class="qty-btn" onclick="changeQuantity(-1)">-</button>
+                        <input type="number" id="shareQuantity" value="1" min="1" max="10" onchange="updatePurchaseTotal()">
+                        <button class="qty-btn" onclick="changeQuantity(1)">+</button>
+                    </div>
+                </div>
+                <div class="purchase-summary">
+                    <div class="summary-row">
+                        <span>ごうけい</span>
+                        <span class="summary-value" id="purchaseTotal">¥25,000</span>
+                    </div>
+                </div>
+                <div class="purchase-note">
+                    ※これはシミュレーションです。<br>ほんとうのおかねではありません。
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="purchaseStock()">こうにゅうする</button>
+                <button class="modal-btn secondary" onclick="closeStockModal()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'child';
+        let balance = 1250;
+        let questCount = 8;
+        let pendingApprovals = 2;
+        let currentQuestId = null;
+
+        // Mode Switching
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Update buttons
+            const modeBtns = document.querySelectorAll('.mode-btn');
+            modeBtns.forEach((btn, index) => {
+                btn.classList.remove('active');
+                if ((mode === 'child' && index === 0) || (mode === 'parent' && index === 1)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update views
+            if (mode === 'child') {
+                document.getElementById('childView').classList.add('active');
+                document.getElementById('parentView').classList.remove('active');
+                document.getElementById('investmentView').classList.remove('active');
+            } else {
+                document.getElementById('childView').classList.remove('active');
+                document.getElementById('parentView').classList.add('active');
+                document.getElementById('investmentView').classList.remove('active');
+            }
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Quest Completion (Child)
+        function completeQuest(questId) {
+            currentQuestId = questId;
+            const modal = document.getElementById('questModal');
+            modal.classList.add('show');
+        }
+
+        function submitQuest() {
+            const questCard = document.querySelector(`#childQuestList [data-quest-id="${currentQuestId}"]`);
+            questCard.classList.add('pending');
+            questCard.querySelector('.quest-status').textContent = '承認待ち';
+            questCard.querySelector('.quest-status').classList.add('pending');
+            questCard.onclick = null;
+            
+            closeModal();
+            showToast('✅ クエストをていしゅつしました!');
+            
+            // Update approval count
+            pendingApprovals++;
+            updateApprovalBadge();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('questModal');
+            modal.classList.remove('show');
+        }
+
+        // Quest Approval (Parent)
+        function approveQuest(button, questId, reward) {
+            const card = button.closest('.approval-card');
+            card.classList.add('removing');
+            
+            // Update balance
+            balance += reward;
+            document.getElementById('childBalance').textContent = balance;
+            document.getElementById('parentBalance').textContent = balance;
+            
+            // Update quest count
+            questCount++;
+            document.getElementById('childQuestCount').textContent = questCount;
+            document.getElementById('parentQuestCount').textContent = questCount;
+            
+            // Update child view quest status
+            const childQuestCard = document.querySelector(`#childQuestList [data-quest-id="${questId}"]`);
+            if (childQuestCard) {
+                childQuestCard.classList.remove('pending');
+                childQuestCard.classList.add('completed');
+                childQuestCard.querySelector('.quest-status').textContent = '完了';
+                childQuestCard.querySelector('.quest-status').classList.remove('pending');
+                childQuestCard.querySelector('.quest-status').classList.add('completed');
+            }
+            
+            setTimeout(() => {
+                card.remove();
+                pendingApprovals--;
+                updateApprovalBadge();
+                
+                if (document.querySelectorAll('.approval-card').length === 0) {
+                    document.getElementById('approvalList').innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">承認待ちのクエストはありません</div>';
+                }
+            }, 300);
+            
+            showToast(`✅ 承認しました! +${reward}ポイント`);
+        }
+
+        function rejectQuest(button) {
+            const card = button.closest('.approval-card');
+            card.style.transform = 'translateX(-100%)';
+            card.style.opacity = '0';
+            
+            setTimeout(() => {
+                card.remove();
+                pendingApprovals--;
+                updateApprovalBadge();
+                
+                if (document.querySelectorAll('.approval-card').length === 0) {
+                    document.getElementById('approvalList').innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">承認待ちのクエストはありません</div>';
+                }
+            }, 300);
+            
+            showToast('❌ 却下しました');
+        }
+
+        function updateApprovalBadge() {
+            const badge = document.getElementById('approvalCount');
+            if (badge) {
+                if (pendingApprovals > 0) {
+                    badge.textContent = pendingApprovals;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            // Animate progress bars
+            const progressFills = document.querySelectorAll('.progress-fill');
+            progressFills.forEach(fill => {
+                const width = fill.style.width;
+                fill.style.width = '0%';
+                setTimeout(() => {
+                    fill.style.width = width;
+                }, 100);
+            });
+
+            // Animate chart bars
+            const chartBars = document.querySelectorAll('.chart-bar');
+            chartBars.forEach((bar, index) => {
+                const height = bar.style.height;
+                bar.style.height = '0%';
+                setTimeout(() => {
+                    bar.style.height = height;
+                }, 200 + (index * 100));
+            });
+        });
+
+        // Investment Screen Functions
+        function openInvestmentScreen() {
+            document.getElementById('childView').classList.remove('active');
+            document.getElementById('investmentView').classList.add('active');
+        }
+
+        function closeInvestmentScreen() {
+            document.getElementById('investmentView').classList.remove('active');
+            document.getElementById('childView').classList.add('active');
+        }
+
+        // COREZO Shopping
+        function openCorezoShopping() {
+            window.open('https://shopping.corezo.co.jp/', '_blank');
+            showToast('🛒 COREZOショッピングサイトを開きました');
+        }
+
+        let selectedStock = null;
+        const stockData = {
+            apple: { name: 'アップル', ticker: 'AAPL', price: 25000, emoji: '🍎' },
+            nintendo: { name: 'にんてんどう', ticker: 'NTDOY', price: 8500, emoji: '🎮' },
+            toyota: { name: 'トヨタ', ticker: 'TM', price: 3200, emoji: '🚗' },
+            sony: { name: 'ソニー', ticker: 'SONY', price: 15800, emoji: '🎵' },
+            pokemon: { name: 'ポケモン', ticker: 'PKM', price: 12000, emoji: '⚡' }
+        };
+
+        function selectStock(stockId) {
+            selectedStock = stockData[stockId];
+            showStockPurchaseModal();
+        }
+
+        function showStockPurchaseModal() {
+            const modal = document.getElementById('stockModal');
+            const stock = selectedStock;
+            
+            document.getElementById('stockModalIcon').textContent = stock.emoji;
+            document.getElementById('stockModalName').textContent = stock.name;
+            document.getElementById('stockModalTicker').textContent = stock.ticker;
+            document.getElementById('stockModalPrice').textContent = `¥${stock.price.toLocaleString()}`;
+            
+            modal.classList.add('show');
+        }
+
+        function closeStockModal() {
+            document.getElementById('stockModal').classList.remove('show');
+            document.getElementById('shareQuantity').value = '1';
+            updatePurchaseTotal();
+        }
+
+        function updatePurchaseTotal() {
+            const quantity = parseInt(document.getElementById('shareQuantity').value) || 1;
+            const total = selectedStock.price * quantity;
+            document.getElementById('purchaseTotal').textContent = `¥${total.toLocaleString()}`;
+        }
+
+        function changeQuantity(delta) {
+            const input = document.getElementById('shareQuantity');
+            let value = parseInt(input.value) || 1;
+            value = Math.max(1, Math.min(10, value + delta));
+            input.value = value;
+            updatePurchaseTotal();
+        }
+
+        function purchaseStock() {
+            const quantity = parseInt(document.getElementById('shareQuantity').value) || 1;
+            const total = selectedStock.price * quantity;
+            
+            closeStockModal();
+            showToast(`✅ ${selectedStock.name}を${quantity}かぶこうにゅうしました!`);
+            
+            // Mark investment quest as pending
+            setTimeout(() => {
+                const questCard = document.querySelector('[data-quest-id="3"]');
+                if (questCard && !questCard.classList.contains('pending')) {
+                    questCard.classList.add('pending');
+                    questCard.querySelector('.quest-status').textContent = '承認待ち';
+                    questCard.querySelector('.quest-status').classList.add('pending');
+                    questCard.onclick = null;
+                }
+            }, 300);
+        }
+
+        // Close modal on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'stockModal') {
+                closeStockModal();
+            }
+        });
+
+        // Handle login redirect from login page
+        window.addEventListener('load', () => {
+            const hash = window.location.hash.substring(1); // Remove # from hash
+            
+            if (hash === 'parent') {
+                // Switch to parent mode
+                setTimeout(() => {
+                    switchMode('parent');
+                }, 100);
+            } else if (hash === 'child') {
+                // Switch to child mode (already default, but ensure it's set)
+                setTimeout(() => {
+                    switchMode('child');
+                }, 100);
+            }
+            
+            // Clear hash after processing
+            if (hash) {
+                history.replaceState(null, null, window.location.pathname);
+            }
+        });
+
+        // Logout function
+        function logout() {
+            if (confirm('ログアウトしますか？')) {
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>
